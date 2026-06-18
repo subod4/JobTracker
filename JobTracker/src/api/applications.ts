@@ -1,7 +1,7 @@
 import type { Application, ApplicationFormData, ApplicationFilters } from '../types';
 import { getToken } from './auth';
 
-const API_BASE_URL = '/api/applications';
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || ''}/api/applications`;
 
 class ApiError extends Error {
   status: number;

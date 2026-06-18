@@ -1,6 +1,6 @@
 import type { AuthResponse, User } from '../types';
 
-const AUTH_BASE_URL = '/api/auth';
+const AUTH_BASE_URL = `${import.meta.env.VITE_API_URL || ''}/api/auth`;
 
 class AuthError extends Error {
   status: number;
