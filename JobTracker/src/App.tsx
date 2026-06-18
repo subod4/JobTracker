@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import type { Application, ApplicationFormData, User } from './types';
+import type { Application, ApplicationFormData, ApplicationStatus, User } from './types';
 import { useApplications } from './hooks/useApplications';
 import { getCurrentUser, logout as authLogout } from './api/auth';
 import Layout from './components/Layout';
 import AuthScreen from './components/AuthScreen';
 import ApplicationList from './components/ApplicationList';
+import ApplicationKanban from './components/ApplicationKanban';
 import ApplicationForm from './components/ApplicationForm';
 import ApplicationDetail from './components/ApplicationDetail';
 import DeleteConfirmModal from './components/DeleteConfirmModal';
@@ -18,6 +19,7 @@ type ModalState =
 
 export default function App() {
   const [user, setUser] = useState<User | null>(getCurrentUser());
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
 
   const {
     applications,
@@ -86,6 +88,22 @@ export default function App() {
     }
   };
 
+  // Kanban status change handler
+  const handleKanbanStatusChange = async (appId: number | string, newStatus: ApplicationStatus) => {
+    const app = applications.find((a) => a.id === appId);
+    if (app) {
+      const updatedData: ApplicationFormData = {
+        company_name: app.company_name,
+        job_title: app.job_title,
+        job_type: app.job_type,
+        status: newStatus,
+        applied_date: app.applied_date,
+        notes: app.notes,
+      };
+      await updateApp(appId, updatedData);
+    }
+  };
+
   // Render Authentication screen if user is not logged in
   if (!user) {
     return <AuthScreen onAuthSuccess={handleAuthSuccess} />;
@@ -93,19 +111,67 @@ export default function App() {
 
   return (
     <Layout user={user} onLogout={handleLogout}>
-      <ApplicationList
-        applications={applications}
-        loading={loading}
-        error={error}
-        searchQuery={filters.search || ''}
-        statusFilter={filters.status || ''}
-        onSearchChange={setSearchQuery}
-        onStatusFilterChange={setStatusFilter}
-        onAddNew={openAdd}
-        onView={openView}
-        onEdit={openEdit}
-        onDelete={openDelete}
-      />
+      <div className="space-y-4">
+        {/* View Toggle */}
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold transition-all ${
+              viewMode === 'list'
+                ? 'bg-slate-800 text-white shadow-sm'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+            }`}
+            title="List View"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <span className="hidden sm:inline">List</span>
+          </button>
+          <button
+            onClick={() => setViewMode('kanban')}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold transition-all ${
+              viewMode === 'kanban'
+                ? 'bg-slate-800 text-white shadow-sm'
+                : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+            }`}
+            title="Kanban View"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            <span className="hidden sm:inline">Kanban</span>
+          </button>
+        </div>
+
+        {/* View Content */}
+        {viewMode === 'list' ? (
+          <ApplicationList
+            applications={applications}
+            loading={loading}
+            error={error}
+            searchQuery={filters.search || ''}
+            statusFilter={filters.status || ''}
+            onSearchChange={setSearchQuery}
+            onStatusFilterChange={setStatusFilter}
+            onAddNew={openAdd}
+            onView={openView}
+            onEdit={openEdit}
+            onDelete={openDelete}
+          />
+        ) : (
+          <ApplicationKanban
+            applications={applications}
+            loading={loading}
+            error={error}
+            searchQuery={filters.search || ''}
+            onAddNew={openAdd}
+            onEdit={openEdit}
+            onDelete={openDelete}
+            onStatusChange={handleKanbanStatusChange}
+          />
+        )}
+      </div>
 
       {/* Add Modal */}
       <ApplicationForm
