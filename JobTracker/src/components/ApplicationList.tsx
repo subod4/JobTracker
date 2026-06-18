@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { Application, ApplicationStatus } from '../types';
+import { formatDate, getJobTypeBadgeClasses } from '../utils/formatting';
 import StatusBadge from './StatusBadge';
 import EmptyState from './EmptyState';
 import LoadingSpinner from './LoadingSpinner';
@@ -27,26 +28,6 @@ const STATUS_OPTIONS: { value: ApplicationStatus | ''; label: string }[] = [
   { value: 'Offer', label: 'Offer' },
   { value: 'Rejected', label: 'Rejected' },
 ];
-
-function formatDate(dateStr: string): string {
-  try {
-    const d = new Date(dateStr + (dateStr.includes('T') ? '' : 'T12:00:00'));
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  } catch {
-    return dateStr;
-  }
-}
-
-function getJobTypeBadgeClasses(type: string): string {
-  switch (type) {
-    case 'Internship':
-      return 'bg-violet-50 text-violet-700 border-violet-200';
-    case 'Part-time':
-      return 'bg-sky-50 text-sky-700 border-sky-200';
-    default:
-      return 'bg-slate-100 text-slate-700 border-slate-200';
-  }
-}
 
 export default function ApplicationList({
   applications,

@@ -1,5 +1,5 @@
-import React from 'react';
 import type { Application } from '../types';
+import { formatDate, getJobTypeBadgeClasses } from '../utils/formatting';
 import StatusBadge from './StatusBadge';
 
 interface ApplicationDetailProps {
@@ -8,26 +8,6 @@ interface ApplicationDetailProps {
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
-}
-
-function formatDate(dateStr: string): string {
-  try {
-    const d = new Date(dateStr + (dateStr.includes('T') ? '' : 'T12:00:00'));
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  } catch {
-    return dateStr;
-  }
-}
-
-function getJobTypeBadgeClasses(type: string): string {
-  switch (type) {
-    case 'Internship':
-      return 'bg-violet-50 text-violet-700 border-violet-200';
-    case 'Part-time':
-      return 'bg-sky-50 text-sky-700 border-sky-200';
-    default:
-      return 'bg-slate-100 text-slate-700 border-slate-200';
-  }
 }
 
 export default function ApplicationDetail({

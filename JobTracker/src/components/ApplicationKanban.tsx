@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Application, ApplicationStatus } from '../types';
+import { formatDate, getJobTypeBadgeClasses } from '../utils/formatting';
 import LoadingSpinner from './LoadingSpinner';
 
 interface ApplicationKanbanProps {
@@ -45,26 +46,6 @@ const STATUS_CONFIG = {
     textColor: 'text-rose-700',
   },
 };
-
-function getJobTypeBadgeClasses(type: string): string {
-  switch (type) {
-    case 'Internship':
-      return 'bg-violet-50 text-violet-700 border-violet-200';
-    case 'Part-time':
-      return 'bg-sky-50 text-sky-700 border-sky-200';
-    default:
-      return 'bg-slate-100 text-slate-700 border-slate-200';
-  }
-}
-
-function formatDate(dateStr: string): string {
-  try {
-    const d = new Date(dateStr + (dateStr.includes('T') ? '' : 'T12:00:00'));
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  } catch {
-    return dateStr;
-  }
-}
 
 function KanbanCard({
   app,
@@ -197,7 +178,7 @@ function KanbanColumn({
           onStatusChange(app.id, status);
         }
       } catch (err) {
-        console.error('Failed to parse dropped application:', err);
+        // Silent fail for drag and drop parsing errors
       }
     }
   };

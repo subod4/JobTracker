@@ -10,14 +10,13 @@ const connectDB = async () => {
     if (!dbUri || dbUri === 'mongodb://127.0.0.1:27017/jobtracker' || dbUri === 'mongodb://localhost:27017/jobtracker') {
       // Try to connect to local MongoDB first, but with a short timeout
       try {
-        console.log('Attempting to connect to local MongoDB...');
         const conn = await mongoose.connect(dbUri || 'mongodb://127.0.0.1:27017/jobtracker', {
           serverSelectionTimeoutMS: 2000 // 2 seconds timeout
         });
         console.log(`MongoDB Connected locally: ${conn.connection.host}`);
         return;
       } catch (localError) {
-        console.log('Local MongoDB not running. Starting in-memory MongoDB database...');
+        // Local MongoDB not running, fall back to in-memory
       }
 
       // Fallback to memory server
