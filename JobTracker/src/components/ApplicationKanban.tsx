@@ -264,7 +264,7 @@ export default function ApplicationKanban({
   return (
     <div className="space-y-6" id="application-kanban-container">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" id="kpi-cards">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" id="kpi-cards">
         <div className="bg-white border border-slate-100 p-4 rounded-xl flex flex-col justify-between hover:shadow-md transition-all cursor-default text-left group">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
             Total
@@ -296,6 +296,14 @@ export default function ApplicationKanban({
           <div className="mt-2">
             <div className="text-2xl font-bold text-emerald-700 leading-none">{totalCounts.Offer}</div>
             <span className="text-[10px] text-emerald-500">received</span>
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-100 p-4 rounded-xl flex flex-col justify-between hover:shadow-md transition-all cursor-default text-left group">
+          <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Rejected</span>
+          <div className="mt-2">
+            <div className="text-2xl font-bold text-slate-800 leading-none">{totalCounts.Rejected}</div>
+            <span className="text-[10px] text-rose-600">declined</span>
           </div>
         </div>
       </div>

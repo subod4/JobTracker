@@ -96,7 +96,7 @@ export default function ApplicationList({
   return (
     <div className="space-y-6" id="application-list-container">
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" id="kpi-cards">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" id="kpi-cards">
         <button
           onClick={() => handleStatusChange('')}
           className={`bg-white border p-4 rounded-xl flex flex-col justify-between hover:shadow-md transition-all cursor-pointer text-left group ${
@@ -152,6 +152,20 @@ export default function ApplicationList({
           <div className="mt-2">
             <div className="text-2xl font-bold text-emerald-700 leading-none">{statusCounts.Offer}</div>
             <span className="text-[10px] text-emerald-500">received</span>
+          </div>
+        </button>
+
+        <button
+          onClick={() => handleStatusChange('Rejected')}
+          className={`bg-white border p-4 rounded-xl flex flex-col justify-between hover:shadow-md transition-all cursor-pointer text-left group ${
+            statusFilter === 'Rejected' ? 'border-rose-500 ring-1 ring-rose-500/10 shadow-sm' : 'border-slate-100 hover:border-rose-200'
+          }`}
+          id="kpi-rejected"
+        >
+          <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Rejected</span>
+          <div className="mt-2">
+            <div className="text-2xl font-bold text-slate-800 leading-none">{statusCounts.Rejected}</div>
+            <span className="text-[10px] text-rose-600">declined</span>
           </div>
         </button>
       </div>
