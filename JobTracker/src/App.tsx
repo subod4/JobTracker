@@ -1,122 +1,147 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import type { Application, ApplicationFormData, User } from './types';
+import { useApplications } from './hooks/useApplications';
+import { getCurrentUser, logout as authLogout } from './api/auth';
+import Layout from './components/Layout';
+import AuthScreen from './components/AuthScreen';
+import ApplicationList from './components/ApplicationList';
+import ApplicationForm from './components/ApplicationForm';
+import ApplicationDetail from './components/ApplicationDetail';
+import DeleteConfirmModal from './components/DeleteConfirmModal';
 
-function App() {
-  const [count, setCount] = useState(0)
+type ModalState =
+  | { type: 'none' }
+  | { type: 'add' }
+  | { type: 'edit'; application: Application }
+  | { type: 'view'; application: Application }
+  | { type: 'delete'; application: Application };
+
+export default function App() {
+  const [user, setUser] = useState<User | null>(getCurrentUser());
+
+  const {
+    applications,
+    loading,
+    error,
+    filters,
+    setStatusFilter,
+    setSearchQuery,
+    createApp,
+    updateApp,
+    deleteApp,
+    mutating,
+  } = useApplications(!!user);
+
+  const [modal, setModal] = useState<ModalState>({ type: 'none' });
+
+  // --- Auth handlers ---
+  const handleAuthSuccess = (authenticatedUser: User) => {
+    setUser(authenticatedUser);
+  };
+
+  const handleLogout = () => {
+    authLogout();
+    setUser(null);
+    setModal({ type: 'none' });
+  };
+
+  // --- Modal handlers ---
+  const openAdd = () => setModal({ type: 'add' });
+  const openEdit = (app: Application) => setModal({ type: 'edit', application: app });
+  const openView = (app: Application) => setModal({ type: 'view', application: app });
+  const openDelete = (app: Application) => setModal({ type: 'delete', application: app });
+  const closeModal = () => setModal({ type: 'none' });
+
+  // --- CRUD handlers ---
+  const handleCreate = async (data: ApplicationFormData): Promise<boolean> => {
+    const success = await createApp(data);
+    return success;
+  };
+
+  const handleUpdate = async (data: ApplicationFormData): Promise<boolean> => {
+    if (modal.type !== 'edit') return false;
+    const success = await updateApp(modal.application.id, data);
+    return success;
+  };
+
+  const handleDelete = async () => {
+    if (modal.type !== 'delete') return;
+    const success = await deleteApp(modal.application.id);
+    if (success) {
+      closeModal();
+    }
+  };
+
+  // View → Edit transition
+  const handleViewToEdit = () => {
+    if (modal.type === 'view') {
+      setModal({ type: 'edit', application: modal.application });
+    }
+  };
+
+  // View → Delete transition
+  const handleViewToDelete = () => {
+    if (modal.type === 'view') {
+      setModal({ type: 'delete', application: modal.application });
+    }
+  };
+
+  // Render Authentication screen if user is not logged in
+  if (!user) {
+    return <AuthScreen onAuthSuccess={handleAuthSuccess} />;
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <Layout user={user} onLogout={handleLogout}>
+      <ApplicationList
+        applications={applications}
+        loading={loading}
+        error={error}
+        searchQuery={filters.search || ''}
+        statusFilter={filters.status || ''}
+        onSearchChange={setSearchQuery}
+        onStatusFilterChange={setStatusFilter}
+        onAddNew={openAdd}
+        onView={openView}
+        onEdit={openEdit}
+        onDelete={openDelete}
+      />
 
-      <div className="ticks"></div>
+      {/* Add Modal */}
+      <ApplicationForm
+        isOpen={modal.type === 'add'}
+        onClose={closeModal}
+        onSubmit={handleCreate}
+        loading={mutating}
+      />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {/* Edit Modal */}
+      <ApplicationForm
+        isOpen={modal.type === 'edit'}
+        onClose={closeModal}
+        onSubmit={handleUpdate}
+        editApplication={modal.type === 'edit' ? modal.application : null}
+        loading={mutating}
+      />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* View Modal */}
+      <ApplicationDetail
+        isOpen={modal.type === 'view'}
+        application={modal.type === 'view' ? modal.application : null}
+        onClose={closeModal}
+        onEdit={handleViewToEdit}
+        onDelete={handleViewToDelete}
+      />
+
+      {/* Delete Confirmation */}
+      <DeleteConfirmModal
+        isOpen={modal.type === 'delete'}
+        companyName={modal.type === 'delete' ? modal.application.company_name : ''}
+        jobTitle={modal.type === 'delete' ? modal.application.job_title : ''}
+        onConfirm={handleDelete}
+        onCancel={closeModal}
+        loading={mutating}
+      />
+    </Layout>
+  );
 }
-
-export default App
